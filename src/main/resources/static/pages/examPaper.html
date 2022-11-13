@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>实验室安全教育</title>
+    <meta name="description" content="实验室安全教育">
+    <meta name="keywords" content="实验室安全教育">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .datatable {
+            position: relative;
+            box-sizing: border-box;
+            -webkit-box-flex: 1;
+            width: 100%;
+            max-width: 100%;
+            font-size: 14px;
+            color: rgb(96, 98, 102);
+            overflow: hidden;
+            flex: 1 1 0%;
+        }
+
+        .datatable td, .datatable th {
+            padding: 12px 0;
+            min-width: 0;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+            position: relative;
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="hold-transition">
+<div id="app">
+    <div class="content-header">
+        <h1>试卷管理<small>试卷列表</small></h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>试卷管理</el-breadcrumb-item>
+            <el-breadcrumb-item>试卷列表</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-input placeholder="试卷名称" v-model="pagination.queryString" style="width: 200px;"
+                          class="filter-item"></el-input>
+                <el-button @click="findPage()" class="dalfBut">查询</el-button>
+                <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+                <el-button type="primary" class="butT" @click="handleRandomCreate()">随机生成试卷</el-button>
+            </div>
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="name" label="试卷名称" align="center"></el-table-column>
+                <el-table-column prop="score" label="试卷总分" align="center"></el-table-column>
+                <el-table-column prop="question_count" label="题目总数" align="center"></el-table-column>
+                <el-table-column label="是否设为考试卷" align="center">
+                    <template slot-scope="scope">
+                        <el-switch v-model="scope.row.default_paper" active-text="是" inactive-text="否"
+                                   :active-value="1" :inactive-value="2"
+                                   active-color="#13ce66" inactive-color="#ff4949"
+                                   @change="handleSwitchChange(scope.row)">启用
+                        </el-switch>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center" width="240px">
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+                        <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <div class="pagination-container">
+                <el-pagination
+                        class="pagiantion"
+                        @current-change="handleCurrentChange"
+                        :current-page="pagination.currentPage"
+                        :page-size="pagination.pageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="pagination.total">
+                </el-pagination>
+            </div>
+
+            <!-- 新增标签弹层 -->
+            <div class="add-form">
+                <el-dialog title="新增试卷" :visible.sync="dialogFormVisible">
+                    <template>
+                        <el-tabs v-model="activeName" type="card">
+                            <el-tab-pane label="试卷信息" name="first">
+                                <el-form label-position="right" label-width="100px">
+                                    <el-row>
+                                        <el-col :span="24">
+                                            <el-form-item label="试卷名称">
+                                                <el-input v-model="formData.name"/>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row>
+                                        <el-col :span="12">
+                                            <el-form-item label="试卷总分">
+                                                <el-input v-model="formData.score"/>
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <el-form-item label="题目总数">
+                                                <el-input v-model="formData.question_count"/>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                </el-form>
+                            </el-tab-pane>
+                            <el-tab-pane label="单选题信息" name="second">
+                                <div class="checkScrol">
+                                    <table class="datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>选择</th>
+                                            <th>题干</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="c in tableData[0]">
+                                            <td>
+                                                <input :id="c.choice_id" v-model="singleIds" type="checkbox"
+                                                       :value="c.choice_id">
+                                            </td>
+                                            <td><label :for="c.choice_id">{{c.choice_info}}</label></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="判断题信息" name="third">
+                                <div class="checkScrol">
+                                    <table class="datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>选择</th>
+                                            <th>题干</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="c in tableData[1]">
+                                            <td>
+                                                <input :id="c.judgment_id" v-model="judgmentIds" type="checkbox"
+                                                       :value="c.judgment_id">
+                                            </td>
+                                            <td><label :for="c.judgment_id">{{c.judgment_info}}</label></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="多选题信息" name="fourth">
+                                <div class="checkScrol">
+                                    <table class="datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>选择</th>
+                                            <th>题干</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="c in tableData[2]">
+                                            <td>
+                                                <input :id="c.multiple_id" v-model="multipleIds" type="checkbox"
+                                                       :value="c.multiple_id">
+                                            </td>
+                                            <td><label :for="c.multiple_id">{{c.multiple_info}}</label></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </el-tab-pane>
+                        </el-tabs>
+                    </template>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogFormVisible = false">取消</el-button>
+                        <el-button type="primary" @click="handleAdd()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 编辑标签弹层 -->
+            <div class="add-form">
+                <el-dialog title="编辑试卷" :visible.sync="dialogRandomFormVisible">
+                    <el-form :model="formData" label-position="right" label-width="100px">
+                        <el-row>
+                            <el-col :span="24">
+                                <el-form-item label="试卷名称">
+                                    <el-input v-model="formData.name" placeholder="    默认为：实验室安全教育考试卷"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogRandomFormVisible = false">取消</el-button>
+                        <el-button type="primary" @click="handleRandomAdd()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 编辑标签弹层 -->
+            <div class="add-form">
+                <el-dialog title="编辑试卷" :visible.sync="dialogFormVisible4Edit">
+                    <template>
+                        <el-tabs v-model="activeName" type="card">
+                            <el-tab-pane label="试卷信息" name="first">
+                                <el-form label-position="right" label-width="100px">
+                                    <el-row>
+                                        <el-col :span="24">
+                                            <el-form-item label="试卷名称">
+                                                <el-input v-model="formData.name"/>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                    <el-row>
+                                        <el-col :span="12">
+                                            <el-form-item label="试卷总分">
+                                                <el-input v-model="formData.score"/>
+                                            </el-form-item>
+                                        </el-col>
+                                        <el-col :span="12">
+                                            <el-form-item label="题目总数">
+                                                <el-input v-model="formData.question_count"/>
+                                            </el-form-item>
+                                        </el-col>
+                                    </el-row>
+                                </el-form>
+                            </el-tab-pane>
+                            <el-tab-pane label="单选题信息" name="second">
+                                <div class="checkScrol">
+                                    <table class="datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>选择</th>
+                                            <th>题干</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="c in tableData[0]">
+                                            <td>
+                                                <input :id="c.choice_id" v-model="singleIds" type="checkbox" :value="c.choice_id">
+                                            </td>
+                                            <td><label :for="c.choice_id">{{c.choice_info}}</label></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="判断题信息" name="third">
+                                <div class="checkScrol">
+                                    <table class="datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>选择</th>
+                                            <th>题干</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="c in tableData[1]">
+                                            <td>
+                                                <input :id="c.judgment_id" v-model="judgmentIds" type="checkbox" :value="c.judgment_id">
+                                            </td>
+                                            <td><label :for="c.judgment_id">{{c.judgment_info}}</label></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </el-tab-pane>
+                            <el-tab-pane label="多选题信息" name="fourth">
+                                <div class="checkScrol">
+                                    <table class="datatable">
+                                        <thead>
+                                        <tr>
+                                            <th>选择</th>
+                                            <th>题干</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="c in tableData[2]">
+                                            <td>
+                                                <input :id="c.multiple_id" v-model="multipleIds" type="checkbox" :value="c.multiple_id">
+                                            </td>
+                                            <td><label :for="c.multiple_id">{{c.multiple_info}}</label></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </el-tab-pane>
+                        </el-tabs>
+                    </template>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogFormVisible4Edit = false">取消</el-button>
+                        <el-button type="primary" @click="handleEdit()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            activeName: 'first',//添加/编辑窗口Tab标签名称
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 10,//每页显示的记录数
+                total: 0,//总记录数
+                queryString: null//查询条件
+            },
+            dataList: [],//当前页要展示的分页列表数据
+            formData: {},//表单数据
+            tableData: [],//新增和编辑表单中对应的列表数据
+            //新增和编辑表单中对应的复选框，基于双向绑定可以进行回显和数据提交
+            singleIds: [],
+            multipleIds: [],
+            judgmentIds: [],
+            singleChoiceQuestionInfo: [], //预览弹层信息
+            dialogFormVisible: false,//增加表单是否可见
+            dialogRandomFormVisible: false, //随机新增表单是否可见
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+        },
+        methods: {
+            //编辑
+            handleEdit() {
+                var that = this;
+                axios.post("/examPaper/edit?singleIds=" + this.singleIds + "&multipleIds=" + this.multipleIds + "&judgmentIds=" + this.judgmentIds, this.formData).then((res) => {
+                    that.dialogFormVisible4Edit = false;
+                    if (res.data.flag) {
+                        that.$message({
+                            type: 'success',
+                            message: res.data.message
+                        });
+                    } else {
+                        that.$message.error(res.data.message);
+                    }
+                }).finally(() => {
+                    this.findPage();
+                });
+            },
+            //添加
+            handleAdd() {
+                var that = this;
+                //发送请求
+                axios.post("/examPaper/add?singleIds=" + this.singleIds + "&multipleIds=" + this.multipleIds + "&judgmentIds=" + this.judgmentIds, this.formData).then((response) => {
+                    that.dialogFormVisible = false;
+                    if (response.data.flag) {
+                        that.$message({
+                            type: 'success',
+                            message: response.data.message
+                        });
+                    } else {
+                        that.$message.error(response.data.message);
+                    }
+                }).finally(() => {
+                    this.findPage();
+                });
+            },
+            //随机生成试卷
+            handleRandomAdd() {
+                var that = this;
+                axios.post("/examPaper/randomAdd", this.formData).then((res) => {
+                    that.dialogRandomFormVisible = false;
+                    if (res.data.flag) {
+                        that.$message({
+                            type: 'success',
+                            message: res.data.message
+                        });
+                    } else {
+                        that.$message.error(res.data.message);
+                    }
+                }).finally(() => {
+                    this.findPage();
+                });
+            },
+            //分页查询
+            findPage() {
+                //设置分页参数
+                var param = {
+                    currentPage: this.pagination.currentPage,
+                    pageSize: this.pagination.pageSize,
+                    queryString: this.pagination.queryString
+                }
+                var that = this;
+                //发送请求
+                axios.post("/examPaper/findPage", param).then((response) => {
+                    that.pagination.total = response.data.total;
+                    that.dataList = response.data.rows;
+                });
+            },
+            // 重置表单
+            resetForm() {
+                this.formData = {};
+            },
+            //弹出新增窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+                this.resetForm();
+                this.activeName = "first";
+                this.singleIds = [];
+                this.multipleIds = [];
+                this.judgmentIds = [];
+                var that = this;
+                axios.get("/examPaper/findAll").then((res) => {
+                    if (res.data.flag) {
+                        that.tableData = res.data.data;
+                    } else {
+                        that.$message.error(response.data.message);
+                    }
+                });
+            },
+            //弹出随机新增窗口
+            handleRandomCreate() {
+                this.dialogRandomFormVisible = true;
+                this.resetForm();
+            },
+            //弹出编辑窗口
+            handleUpdate(row) {
+                this.dialogFormVisible4Edit = true;
+                this.activeName = "first";
+                this.formData = row;
+                var that = this;
+                axios.get("/examPaper/findAll").then((res) => {
+                    if (res.data.flag) {
+                        that.tableData = res.data.data;
+                        axios.get("/examPaper/findQuestionIdsByPaperId?id=" + row.id).then((res) => {
+                            if (res.data.flag) {
+                                that.singleIds = res.data.data[0];
+                                that.multipleIds = res.data.data[1];
+                                that.judgmentIds = res.data.data[2];
+                            } else {
+                                that.$message.error(res.data.message);
+                            }
+                        });
+                    } else {
+                        that.$message.error(res.data.message);
+                    }
+                });
+            },
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.findPage();
+            },
+            // 删除
+            handleDelete(row) {
+                this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var that = this;
+                    axios.get("/examPaper/delete?id=" + row.id).then((response) => {
+                        if (response.data.flag) {
+                            //删除成功
+                            that.$message({
+                                type: 'success',
+                                message: response.data.message
+                            });
+                        } else {
+                            //删除失败
+                            that.$message.error(response.data.message);
+                        }
+                    }).finally(() => {
+                        that.findPage()
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            // 默认卷
+            handleSwitchChange(row) {
+                var that = this;
+                axios.post("/examPaper/defaultPaper?id=" + row.id + "&status=" + row.default_paper).then((res) => {
+                    if (res.data.flag) {
+                        that.$message({
+                            type: 'success',
+                            message: res.data.message
+                        });
+                    } else {
+                        that.$message.error(response.data.message);
+                    }
+                }).finally(() => {
+                    that.findPage();
+                });
+            }
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            this.findPage();
+        }
+    })
+</script>
+</html>

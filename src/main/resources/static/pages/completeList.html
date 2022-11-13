@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>实验室安全教育</title>
+    <meta name="description" content="实验室安全教育">
+    <meta name="keywords" content="实验室安全教育">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="hold-transition">
+<div id="app">
+    <div class="content-header">
+        <h1>答卷管理<small>答卷列表</small></h1>
+        <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item>答卷管理</el-breadcrumb-item>
+            <el-breadcrumb-item>答卷列表</el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-input placeholder="试卷名称/学号" v-model="pagination.queryString" style="width: 200px;"
+                          class="filter-item"></el-input>
+                <el-button @click="findPage()" class="dalfBut">查询</el-button>
+            </div>
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="exam_paper_name" label="试卷名称" align="center"></el-table-column>
+                <el-table-column prop="user_uid" label="学号" align="center"></el-table-column>
+                <el-table-column prop="start_time" label="开始时间" align="center"></el-table-column>
+                <el-table-column prop="complete_time" label="完成时间" align="center"></el-table-column>
+                <el-table-column prop="core" label="所得分数" align="center"></el-table-column>
+                <el-table-column prop="score" label="试卷总分" align="center"></el-table-column>
+            </el-table>
+
+            <div class="pagination-container">
+                <el-pagination
+                        class="pagiantion"
+                        @current-change="handleCurrentChange"
+                        :current-page="pagination.currentPage"
+                        :page-size="pagination.pageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="pagination.total">
+                </el-pagination>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 10,//每页显示的记录数
+                total: 0,//总记录数
+                queryString: null//查询条件
+            },
+            dataList: [],//当前页要展示的分页列表数据
+        },
+        methods: {
+            //分页查询
+            findPage() {
+                //设置分页参数
+                var param = {
+                    currentPage: this.pagination.currentPage,
+                    pageSize: this.pagination.pageSize,
+                    queryString: this.pagination.queryString
+                }
+                var that = this;
+                //发送请求
+                axios.post("/completeList/findPage", param).then((response) => {
+                    that.pagination.total = response.data.total;
+                    that.dataList = response.data.rows;
+                });
+            },
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.findPage();
+            },
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            this.findPage();
+        }
+    })
+</script>
+</html>

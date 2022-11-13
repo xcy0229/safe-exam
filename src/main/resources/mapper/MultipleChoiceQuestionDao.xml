@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.MultipleChoiceQuestionDao">
+
+    <!--    新增多选题-->
+    <insert id="add" parameterType="com.james.common.pojo.MultipleChoiceQuestions">
+        insert into multiple_choice_questions(multiple_info,
+                                              multiple_option_A, multiple_option_B, multiple_option_C,
+                                              multiple_option_D, multiple_option_E, multiple_option_F,
+                                              multiple_answer)
+        values (#{multiple_info},
+                #{multiple_option_A}, #{multiple_option_B}, #{multiple_option_C},
+                #{multiple_option_D}, #{multiple_option_E}, #{multiple_option_F},
+                #{multiple_answer})
+    </insert>
+
+    <!--    根据条件查询  -->
+    <select id="selectByCondition" parameterType="String" resultType="com.james.common.pojo.MultipleChoiceQuestions">
+        select * from multiple_choice_questions
+        <if test="value != null and value != '' and value.length > 0">
+            where multiple_info like concat('%', #{value},'%')
+        </if>
+    </select>
+
+    <!--    根据id查询多选题信息 -->
+    <select id="findMultipleChoiceInfoById" parameterType="int" resultType="com.james.common.pojo.MultipleChoiceQuestions">
+        select *
+        from multiple_choice_questions
+        where multiple_id = #{multiple_id}
+    </select>
+
+    <!--    根据id删除多选题   -->
+    <delete id="deleteById" parameterType="int">
+        delete
+        from multiple_choice_questions
+        where multiple_id = #{multiple_id}
+    </delete>
+
+    <!--    多选题修改   -->
+    <update id="edit" parameterType="com.james.common.pojo.MultipleChoiceQuestions">
+        update multiple_choice_questions
+        <set>
+            <if test="multiple_info != null">
+                multiple_info = #{multiple_info},
+            </if>
+            <if test="multiple_option_A != null">
+                multiple_option_A = #{multiple_option_A},
+            </if>
+            <if test="multiple_option_B != null">
+                multiple_option_B = #{multiple_option_B},
+            </if>
+            <if test="multiple_option_C != null">
+                multiple_option_C = #{multiple_option_C},
+            </if>
+            <if test="multiple_option_D != null">
+                multiple_option_D = #{multiple_option_D},
+            </if>
+            <if test="multiple_option_E != null">
+                multiple_option_E = #{multiple_option_E},
+            </if>
+            <if test="multiple_option_F != null">
+                multiple_option_F = #{multiple_option_F},
+            </if>
+            <if test="multiple_answer != null">
+                multiple_answer = #{multiple_answer},
+            </if>
+        </set>
+        where multiple_id = #{multiple_id}
+    </update>
+
+    <!--    查询所有-->
+    <select id="findAll" resultType="com.james.common.pojo.MultipleChoiceQuestions">
+        select *
+        from multiple_choice_questions
+    </select>
+
+    <!--    根据id获取答案    -->
+    <select id="getAnswerById" parameterType="int" resultType="String">
+        select multiple_answer
+        from multiple_choice_questions
+        where multiple_id = #{multiple_id}
+    </select>
+
+    <!--    获取多选题总数-->
+    <select id="getCountById" resultType="int">
+        select count(*)
+        from multiple_choice_questions
+    </select>
+
+    <!--    获取最小值   -->
+    <select id="getMin" resultType="int">
+        select multiple_id
+        from multiple_choice_questions limit 1
+    </select>
+
+    <!--    获取最大值   -->
+    <select id="getMax" resultType="int">
+        select multiple_id
+        from multiple_choice_questions
+        order by multiple_id desc limit 1
+    </select>
+</mapper>

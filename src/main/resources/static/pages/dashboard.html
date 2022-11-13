@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>实验室安全教育</title>
+    <meta name="description" content="实验室安全教育">
+    <meta name="keywords" content="实验室安全教育">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="../plugins/echarts/echarts.min.js"></script>
+</head>
+
+<body class="hold-transition">
+    <div id="app">
+        <div class="content-header">
+            <h1>主页</h1>
+            <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+                <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
+        <div class="app-container">
+            <div class="box">
+                <div class="dash-box">
+                    <div class="show-box">
+                        <div class="content-box">
+                            <div class="content-image box-left">
+                                <img src="../img/quanbudingdan.png">
+                            </div>
+                            <div class="content-text box-right">
+                                <div class="text-top">题目总数</div>
+                                <div class="text-bottom">{{questionCount}}</div>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="content-image box-left">
+                                <img src="../img/wenjian.png">
+                            </div>
+                            <div class="content-text box-right">
+                                <div class="text-top">试卷总数</div>
+                                <div class="text-bottom">{{examPaperCount}}</div>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="content-image box-left">
+                                <img src="../img/guanyuwomen.png">
+                            </div>
+                            <div class="content-text box-right">
+                                <div class="text-top">学生总数</div>
+                                <div class="text-bottom">{{studentCount}}</div>
+                            </div>
+                        </div>
+                        <div class="content-box">
+                            <div class="content-image box-left">
+                                <img src="../img/shichang.png">
+                            </div>
+                            <div class="content-text box-right">
+                                <div class="text-top">答卷总数</div>
+                                <div class="text-bottom">{{answerSheetCount}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+                <div id="chart" style="height:600px;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#app',
+        data: {
+            questionCount: null,
+            examPaperCount: null,
+            studentCount: null,
+            answerSheetCount: null,
+        },
+        methods: {
+            //获取首页各项数量
+            findCount() {
+                var that = this;
+                //发送请求
+                axios.get("/chart/findCount").then((res) => {
+                    if (res.data.flag) {
+                        that.questionCount = res.data.data.questionCount;
+                        that.examPaperCount = res.data.data.examPaperCount;
+                        that.studentCount = res.data.data.studentCount;
+                        that.answerSheetCount = res.data.data.answerSheetCount;
+                    } else {
+                        that.$message.error(res.data.message);
+                    }
+                });
+            },
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            this.findCount();
+        }
+    });
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('chart'));
+    axios.get("/chart/getChart").then((res)=>{
+        myChart.setOption(
+            {
+                title: {
+                    text: '答卷数量',
+                    left: 'center'
+                },
+                legend: {
+                    data:['答卷数量']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: res.data.data.months
+                },
+                yAxis: {
+                    type:'value'
+                },
+                series: [{
+                    data: res.data.data.answerSheet,
+                    type: 'line',
+                    smooth: true
+                }]
+            });
+    });
+</script>
+
+</html>

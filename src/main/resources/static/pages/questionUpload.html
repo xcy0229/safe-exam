@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>实验室安全教育</title>
+    <meta name="description" content="实验室安全教育">
+    <meta name="keywords" content="实验室安全教育">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/question.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <script src="../plugins/echarts/echarts.min.js"></script>
+</head>
+
+<body class="hold-transition">
+    <div id="app">
+        <div class="content-header">
+            <h1>题库管理<small>单选题列表</small></h1>
+            <el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+                <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                <el-breadcrumb-item>题库管理</el-breadcrumb-item>
+                <el-breadcrumb-item>单选题列表</el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
+        <div class="app-container">
+            <div class="box">
+                <el-card class="box-card">
+                    <div class="boxMain">
+                        <el-button style="margin-bottom: 20px;margin-right: 20px" type="primary" @click="downloadTemplate()">模板下载</el-button>
+                        <el-upload action="/question/upload"
+                                   name="excelFile"
+                                   :show-file-list="false"
+                                   :on-success="handleSuccess"
+                                   :before-upload="beforeUpload">
+                            <el-button type="primary">上传文件<i class="el-icon-upload el-icon--right"></i></el-button>
+                        </el-upload>
+                    </div>
+                    <div>
+                        操作说明：请点击"模板下载"按钮获取模板文件，在模板文件中录入预约设置数据后点击"上传文件"按钮上传模板文件。
+                    </div>
+                    <div id="chart" style="height:400px;"></div>
+                </el-card>
+            </div>
+        </div>
+    </div>
+</body>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+        },
+        methods: {
+            //上传之前进行文件格式校验
+            beforeUpload(file){
+                const isXLS = file.type === 'application/vnd.ms-excel';
+                if(isXLS){
+                    return true;
+                }
+                const isXLSX = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+                if (isXLSX) {
+                    return true;
+                }
+                this.$message.error('上传文件只能是xls或者xlsx格式!');
+                //将其全修改为true，在后台进行检验，避免使用wps等其他工具造成文件格式检验失败
+                return true;
+            },
+            //下载模板文件
+            downloadTemplate(){
+                window.location.href="../template/question_template.xlsx";
+            },
+            //上传成功提示
+            handleSuccess(response, file) {
+                if(response.flag){
+                    this.$message({
+                        message: response.message,
+                        type: 'success'
+                    });
+                }else{
+                    this.$message.error(response.message);
+                }
+                console.log(response, file, fileList);
+            },
+        },
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+        }
+    })
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('chart'));
+    axios.get("/chart/getBarChart").then((res)=>{
+        myChart.setOption(
+            {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                title: {
+                    text: '题目数量',
+                    left: 'center'
+                },
+                legend: {
+                    data:['题目数量']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: res.data.data.questionType,
+                    axisTick: {
+                        alignWithLabel: true
+                    }
+                },
+                yAxis: {
+                    type:'value',
+                },
+                series: [{
+                    data: res.data.data.questionCount,
+                    name: 'Direct',
+                    type: 'bar',
+                    barWidth: '60%',
+                    smooth: true
+                }]
+            });
+    });
+</script>
+
+</html>

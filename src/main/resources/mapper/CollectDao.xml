@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.CollectDao">
+
+    <!-- 添加收藏信息 -->
+    <insert id="add" parameterType="com.james.common.pojo.Collect">
+        insert into collect(student_id, question_type, question_id)
+        values (#{student_id}, #{question_type}, #{question_id})
+    </insert>
+
+    <!-- 根据题目id和学生id查询是否存在 -->
+    <select id="findCollectByAllId" resultType="com.james.common.pojo.Collect"
+            parameterType="com.james.common.pojo.Collect">
+        select id
+        from collect
+        where student_id = #{student_id}
+          and question_type = #{question_type}
+          and question_id = #{question_id} limit 1
+    </select>
+
+    <!-- 查询所有的收藏 -->
+    <select id="findAllCollect" resultType="com.james.common.pojo.Collect" parameterType="int">
+        select *
+        from collect
+        where student_id = #{studentId}
+    </select>
+
+    <!-- 删除收藏信息 -->
+    <delete id="removeByAllId" parameterType="com.james.common.pojo.Collect">
+        delete
+        from collect
+        where student_id = #{student_id}
+          and question_type = #{question_type}
+          and question_id = #{question_id}
+    </delete>
+</mapper>

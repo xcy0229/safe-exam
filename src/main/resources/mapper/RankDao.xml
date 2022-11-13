@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.RankDao">
+
+    <!-- 获取成绩排行信息 -->
+    <select id="getRank" resultType="com.james.common.pojo.StudentExamSituation">
+        SELECT *
+        FROM (SELECT *
+              FROM user_exam
+              ORDER BY core DESC, TIMESTAMPDIFF(SECOND, start_time, complete_time)
+              LIMIT 999999) AS a
+        GROUP BY a.user_uid
+        ORDER BY core DESC
+    </select>
+</mapper>

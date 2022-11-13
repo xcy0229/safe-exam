@@ -1,0 +1,52 @@
+# 开发环境配置
+server:
+  # 服务器的HTTP端口，默认为80
+  port: 80
+  servlet:
+    # 应用的访问路径
+    context-path: /
+    session:
+      timeout: 6H
+  tomcat:
+    # tomcat的URI编码
+    uri-encoding: UTF-8
+    # 连接数满后的排队数，默认为100
+    accept-count: 1000
+    threads:
+      # tomcat最大线程数，默认为200
+      max: 800
+      # Tomcat启动初始化的线程数，默认值10
+      min-spare: 100
+# 设置日志级别，root表示根节点，即整体应用日志级别
+logging:
+  level:
+    com.james: debug
+
+spring:
+  profiles:
+    active: druid, redis
+  # 文件上传
+  servlet:
+    multipart:
+      # 单个文件大小
+      max-file-size: 10MB
+      # 设置总上传的文件大小
+      max-request-size: 20MB
+  # 服务模块
+  devtools:
+    restart:
+      # 热部署开关
+      enabled: true
+
+# MyBatis
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:mapper/*.xml
+
+#分页
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+

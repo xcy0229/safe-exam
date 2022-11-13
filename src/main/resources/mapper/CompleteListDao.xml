@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.CompleteListDao">
+
+    <!--    根据条件查询  -->
+    <select id="selectByCondition" parameterType="string" resultType="com.james.common.pojo.StudentExamSituation">
+        select * from user_exam
+        <if test="value != null and value != '' and value.length > 0">
+            where exam_paper_name like concat('%', #{value},'%')
+            or user_uid like concat('%', #{value},'%')
+        </if>
+    </select>
+
+    <!--    获取答卷总数  -->
+    <select id="getCountById" resultType="int">
+        select count(*)
+        from user_exam
+    </select>
+
+    <!--    根据用户id获取答卷  -->
+    <select id="getExamPaperByUserUid" parameterType="int" resultType="com.james.common.pojo.StudentExamSituation">
+        select *
+        from user_exam
+        where user_id = #{id}
+    </select>
+
+    <!--    添加答卷    -->
+    <insert id="add" parameterType="com.james.common.pojo.ExamPaper" keyProperty="user_exam_id" useGeneratedKeys="true">
+        insert into user_exam(exam_paper_id, exam_paper_name, user_id, user_uid, start_time, complete_time, core, score)
+        values (#{exam_paper_id}, #{exam_paper_name}, #{user_id}, #{user_uid}, #{start_time}, #{complete_time}, #{core},
+                #{score})
+    </insert>
+
+    <!--    根据答卷id获取答卷  -->
+    <select id="findExamSheetById" parameterType="int" resultType="com.james.common.pojo.StudentExamSituation">
+        select *
+        from user_exam
+        where user_exam_id = #{id}
+    </select>
+</mapper>

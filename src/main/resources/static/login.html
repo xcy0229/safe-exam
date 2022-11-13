@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>实验室安全教育</title>
+    <meta name="description" content="实验室安全教育">
+    <meta name="keywords" content="实验室安全教育">
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="plugins/elementui/index.css">
+    <link rel="stylesheet" href="plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="hold-transition skin-purple sidebar-mini">
+<div id="app">
+    <div class="login-container">
+        <div class="loginBox">
+            <el-form ref="form" :model="formData" label-position="left">
+                <el-form-item>
+                    <div class="title-container">
+                        <div class="logoInfo clearfix">
+                            <em class="logo"></em>
+                        </div>
+                    </div>
+                </el-form-item>
+                <el-form-item>
+                <div>
+                        <span class="svg-container svg-container_login">
+                          <span class="user"></span>
+                        </span>
+                    <input type="text" v-model="formData.name" placeholder="请输入用户名"/>
+                </div>
+                </el-form-item>
+                <el-form-item>
+                <div>
+                        <span class="svg-container">
+                          <span class="username"></span>
+                        </span>
+                    <input type="password" v-model="formData.password" placeholder="请输入密码"/>
+                </div>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="login" style="width:100%;margin-bottom:30px;">登录</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </div>
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="js/vue.js"></script>
+<script src="plugins/elementui/index.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            formData: {}
+        },
+        methods: {
+            login() {
+                var that = this;
+                axios.post("/admin/login", this.formData).then((response) => {
+                    if (response.data.flag) {
+                        window.location.href="/pages/main.html";
+                    } else {
+                        that.$message.error(response.data.message);
+                    }
+                });
+            }
+        },
+    });
+</script>
+</html>

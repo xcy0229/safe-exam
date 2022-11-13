@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.MistakesCollectDao">
+
+    <!-- 添加错题信息 -->
+    <insert id="add" parameterType="com.james.common.pojo.MistakesCollection">
+        insert into mistakes_collection(student_id, question_type, question_id, student_answer)
+        values (#{student_id}, #{question_type}, #{question_id}, #{student_answer})
+    </insert>
+
+    <!-- 修改错题信息 -->
+    <update id="edit" parameterType="com.james.common.pojo.MistakesCollection">
+        update mistakes_collection
+        <set>
+            <if test="student_answer != null">
+                student_answer = #{student_answer},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 根据题目id和学生id查询是否存在 -->
+    <select id="findMistakesCollectByAllId" resultType="com.james.common.pojo.MistakesCollection"
+            parameterType="com.james.common.pojo.MistakesCollection">
+        select id
+        from mistakes_collection
+        where student_id = #{student_id}
+          and question_type = #{question_type}
+          and question_id = #{question_id}
+        limit 1
+    </select>
+
+    <!-- 查询所有的错题 -->
+    <select id="findAllMistakesCollect" resultType="com.james.common.pojo.MistakesCollection" parameterType="int">
+        select *
+        from mistakes_collection
+        where student_id = #{studentId}
+    </select>
+
+</mapper>

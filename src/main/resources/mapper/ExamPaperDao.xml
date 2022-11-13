@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.ExamPaperDao">
+
+    <!--    根据条件查询  -->
+    <select id="selectByCondition" parameterType="string" resultType="com.james.common.pojo.ExamPaper">
+        select * from exam_paper
+        <if test="value != null and value != '' and value.length > 0">
+            where name like concat('%', #{value},'%')
+        </if>
+    </select>
+
+    <!--    根据id删除  -->
+    <delete id="deleteById" parameterType="int">
+        delete
+        from exam_paper
+        where id = #{id}
+    </delete>
+
+    <!--    根据试卷id删除问题  -->
+    <delete id="delQuestionByPaperId" parameterType="int">
+        delete
+        from exam_question
+        where exam_paper_id = #{id}
+    </delete>
+
+    <!--    添加试卷    -->
+    <insert id="add" parameterType="com.james.common.pojo.ExamPaper" keyProperty="id" useGeneratedKeys="true">
+        insert into exam_paper(name, score, question_count, default_paper)
+        values (#{name}, #{score}, #{question_count}, #{default_paper})
+    </insert>
+
+    <!--    设置试卷与单选题的关联 -->
+    <insert id="setExamPaperAndSingle" parameterType="com.james.common.pojo.ExamQuestion">
+        insert into exam_question(exam_paper_id, exam_question_type, question_id, answer, question_score)
+        values (#{exam_paper_id}, #{exam_question_type}, #{question_id}, #{answer}, #{question_score})
+    </insert>
+
+    <!--    设置试卷与多选题的关联 -->
+    <insert id="setExamPaperAndMultiple" parameterType="com.james.common.pojo.ExamQuestion">
+        insert into exam_question(exam_paper_id, exam_question_type, question_id, answer, question_score)
+        values (#{exam_paper_id}, #{exam_question_type}, #{question_id}, #{answer}, #{question_score})
+    </insert>
+
+    <!--    设置试卷与判断题的关联 -->
+    <insert id="setExamPaperAndJudgment" parameterType="com.james.common.pojo.ExamQuestion">
+        insert into exam_question(exam_paper_id, exam_question_type, question_id, answer, question_score)
+        values (#{exam_paper_id}, #{exam_question_type}, #{question_id}, #{answer}, #{question_score})
+    </insert>
+
+    <!--    根据试卷id获取问题  -->
+    <select id="findQuestionByPaperId" parameterType="int" resultType="com.james.common.pojo.ExamQuestion">
+        select *
+        from exam_question
+        where exam_paper_id = #{exam_paper_id}
+    </select>
+
+    <select id="findQuestionByPaperIdAndType" parameterType="int" resultType="com.james.common.pojo.ExamQuestion">
+        select *
+        from exam_question
+        where exam_paper_id = #{param1}
+          and exam_question_type = #{param2}
+    </select>
+
+    <!--    修改试卷    -->
+    <update id="edit" parameterType="com.james.common.pojo.ExamPaper">
+        update exam_paper
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="score != null">
+                score = #{score},
+            </if>
+            <if test="question_count != null">
+                question_count = #{question_count},
+            </if>
+            <if test="question_paper != null">
+                question_paper = #{question_paper},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--    是否将试卷设为考试卷    -->
+    <update id="editDefaultPaper">
+        update exam_paper
+        set default_paper = #{param2}
+        where id = #{param1}
+    </update>
+
+    <!--    获取试卷总数  -->
+    <select id="getCountById" resultType="int">
+        select count(*)
+        from exam_paper
+    </select>
+
+    <!--    获取最小值   -->
+    <select id="getMin" resultType="int">
+        select id
+        from exam_paper
+        limit 1
+    </select>
+
+    <!--    获取最大值   -->
+    <select id="getMax" resultType="int">
+        select id
+        from exam_paper
+        order by id desc
+        limit 1
+    </select>
+
+    <!--    根据id查询试卷    -->
+    <select id="getExamPaperById" parameterType="int" resultType="com.james.common.pojo.ExamPaper">
+        select *
+        from exam_paper
+        where id = #{id}
+    </select>
+
+    <!--    获取所有考试卷id    -->
+    <select id="getExamPaperId" resultType="java.lang.Integer">
+        select id
+        from exam_paper
+        where default_paper = 1
+    </select>
+
+    <!--    获取测试卷id    -->
+    <select id="getTestPaperId" resultType="java.lang.Integer">
+        select id
+        from exam_paper
+        where default_paper != 1
+    </select>
+</mapper>

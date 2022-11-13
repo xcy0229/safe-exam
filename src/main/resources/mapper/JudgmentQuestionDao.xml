@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.james.dao.JudgmentQuestionDao">
+
+    <!--    新增判断题   -->
+    <insert id="add" parameterType="com.james.common.pojo.JudgmentQuestion">
+        insert into judgment_question(judgment_info, judgment_answer)
+        values (#{judgment_info}, #{judgment_answer})
+    </insert>
+
+    <!--    根据条件查询  -->
+    <select id="selectByCondition" parameterType="String" resultType="com.james.common.pojo.JudgmentQuestion">
+        select * from judgment_question
+        <if test="value != null and value != '' and value.length > 0">
+            where judgment_info like concat('%', #{value},'%')
+        </if>
+    </select>
+
+    <!--    根据id获取判断题信息 -->
+    <select id="findJudgmentInfoById" parameterType="int" resultType="com.james.common.pojo.JudgmentQuestion">
+        select *
+        from judgment_question
+        where judgment_id = #{judgment_id}
+    </select>
+
+    <!--    根据id删除判断题   -->
+    <delete id="deleteById" parameterType="int">
+        delete
+        from judgment_question
+        where judgment_id = #{judgment_id}
+    </delete>
+
+    <!--    编辑判断题   -->
+    <update id="edit" parameterType="com.james.common.pojo.JudgmentQuestion">
+        update judgment_question
+        <set>
+            <if test="judgment_info != null">
+                judgment_info = #{judgment_info},
+            </if>
+            <if test="judgment_answer != null">
+                judgment_answer = #{judgment_answer},
+            </if>
+        </set>
+        where judgment_id = #{judgment_id}
+    </update>
+
+    <!--    查询所有-->
+    <select id="findAll" resultType="com.james.common.pojo.JudgmentQuestion">
+        select *
+        from judgment_question
+    </select>
+
+    <!--    根据id获取答案    -->
+    <select id="getAnswerById" parameterType="int" resultType="int">
+        select judgment_answer
+        from judgment_question
+        where judgment_id = #{judgment_id}
+    </select>
+
+    <!--    获取判断题总数 -->
+    <select id="getCountById" resultType="int">
+        select count(*)
+        from judgment_question
+    </select>
+
+    <!--    获取最小值   -->
+    <select id="getMin" resultType="int">
+        select judgment_id
+        from judgment_question limit 1
+    </select>
+
+    <!--    获取最大值   -->
+    <select id="getMax" resultType="int">
+        select judgment_id
+        from judgment_question
+        order by judgment_id desc limit 1
+    </select>
+</mapper>
